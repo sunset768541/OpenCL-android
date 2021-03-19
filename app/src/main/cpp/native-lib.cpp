@@ -16,6 +16,7 @@
 
 #define TAG OpenCL
 #define LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,"OPENCL",__VA_ARGS__)
+#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,"OPENCL",__VA_ARGS__)
 
 const int ARRAY_SIZE = 100000;
 
@@ -141,8 +142,62 @@ void Cleanup(cl_context context, cl_command_queue commandQueue,
     if (context != 0)
         clReleaseContext(context);
 }
+char * getPlatformName(const cl_platform_id pid) {
+    size_t param_value_size;
+    clGetPlatformInfo(pid, CL_PLATFORM_NAME, 0, NULL, &param_value_size);
+    char *param_value = new char[param_value_size];
+    clGetPlatformInfo(pid, CL_PLATFORM_NAME, param_value_size, param_value, NULL);
+    return param_value;
+}
+void readDeviceInfo(){
+    cl_uint num_platforms;
+    cl_device_id *devices;
+    char name_data[48], ext_data[4096];
+    cl_int i, err;
+    cl_uint num_devices, addr_data;
 
+    clGetPlatformIDs(0, NULL, &num_platforms);
+    cl_platform_id *platforms = new cl_platform_id[num_platforms];
+    clGetPlatformIDs(num_platforms, platforms, NULL);
+    for (cl_uint i = 0; i < num_platforms; i++) {
+        char *platname = getPlatformName(platforms[i]);
+        LOGD(" %d Platform name is :%s",i,platname);
 
+        err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
+        if (err < 0) {
+            LOGD("Couldn't find any devices");
+            exit(1);
+        } else{
+            LOGD(" find  devices num %d",num_devices);
+        }
+
+        /* Access connected devices */
+        devices = (cl_device_id*)
+                malloc(sizeof(cl_device_id) * num_devices);
+        clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL,
+                       num_devices, devices, NULL);
+
+        /*循环显示platform的所有device（CPU和显卡）信息。*/
+        for (i = 0; i < (int)num_devices; i++) {
+
+            err = clGetDeviceInfo(devices[i], CL_DEVICE_NAME,
+                                  sizeof(name_data), name_data, NULL);
+            if (err < 0) {
+                LOGD("Couldn't read extension data");
+                exit(1);
+            }
+            clGetDeviceInfo(devices[i], CL_DEVICE_ADDRESS_BITS,
+                            sizeof(ext_data), &addr_data, NULL);
+
+            clGetDeviceInfo(devices[i], CL_DEVICE_EXTENSIONS,
+                            sizeof(ext_data), ext_data, NULL);
+            LOGD("NAME: %s\nADDRESS_WIDTH: %u\nEXTENSIONS: %s\n\n",
+                 name_data, addr_data, ext_data);
+        }
+
+    }
+    //end
+}
 int test()
 {
 
@@ -239,6 +294,7 @@ Java_com_example_wangmingyong_opencl_MainActivity_stringFromJNI(
         JNIEnv *env,
         jobject /* this */) {
 
+    readDeviceInfo();
     test();
 
     std::string hello = "Hello from C++";

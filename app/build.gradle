@@ -19,7 +19,6 @@ android {
         }
         ndk {
             abiFilters 'armeabi-v7a'
-
         }
     }
     buildTypes {
@@ -36,6 +35,9 @@ android {
     sourceSets.main {
         jniLibs.srcDirs = ['src/main/jniLibs']
         jni.srcDirs = []
+    }
+    packagingOptions {
+        exclude 'lib/armeabi-v7a/libOpenCL.so'
     }
 }
 
