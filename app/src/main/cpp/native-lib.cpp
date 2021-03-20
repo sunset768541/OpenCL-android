@@ -162,6 +162,24 @@ void readDeviceInfo(){
     for (cl_uint i = 0; i < num_platforms; i++) {
         char *platname = getPlatformName(platforms[i]);
         LOGD(" %d Platform name is :%s",i,platname);
+        size_t size;
+        // vendor
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_VENDOR, 0, NULL, &size);
+        char *vendor = (char *)malloc(size);
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_VENDOR, size, vendor, NULL);
+        LOGD("CL_PLATFORM_VENDOR:%s\n", vendor);
+
+        // version
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_VERSION, 0, NULL, &size);
+        char *version = (char *)malloc(size);
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_VERSION, size, version, NULL);
+        LOGD("CL_PLATFORM_VERSION:%s\n", version);
+
+        // profile
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_PROFILE, 0, NULL, &size);
+        char *profile = (char *)malloc(size);
+        err = clGetPlatformInfo(platforms[i], CL_PLATFORM_PROFILE, size, profile, NULL);
+        LOGD("CL_PLATFORM_PROFILE:%s\n", profile);
 
         err = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &num_devices);
         if (err < 0) {
@@ -186,6 +204,7 @@ void readDeviceInfo(){
                 LOGD("Couldn't read extension data");
                 exit(1);
             }
+
             clGetDeviceInfo(devices[i], CL_DEVICE_ADDRESS_BITS,
                             sizeof(ext_data), &addr_data, NULL);
 
@@ -194,6 +213,10 @@ void readDeviceInfo(){
             LOGD("NAME: %s\nADDRESS_WIDTH: %u\nEXTENSIONS: %s\n\n",
                  name_data, addr_data, ext_data);
         }
+
+        free(vendor);
+        free(version);
+        free(profile);
 
     }
     //end
