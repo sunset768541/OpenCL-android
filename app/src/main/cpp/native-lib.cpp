@@ -244,7 +244,7 @@ int test()
 
 
     //const char* filename = "/sdcard/neoscrypt-xaya.cl";
-    const char* filename = "/sdcard/HelloWorld.cl";
+    const char* filename = "/sdcard/FunTest.cl";
     // 一、选择OpenCL平台并创建一个上下文
     context = CreateContext();
 
