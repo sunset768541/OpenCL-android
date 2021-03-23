@@ -237,7 +237,8 @@ int test()
     clock_t t1,t2,t3;
 
 
-    const char* filename = "HelloWorld.cl";
+    const char* filename = "neoscrypt-xaya.cl";
+//    const char* filename = "HelloWorld.cl";
     // 一、选择OpenCL平台并创建一个上下文
     context = CreateContext();
 
