@@ -91,7 +91,8 @@ cl_program CreateProgram(cl_context context, cl_device_id device, const char* fi
 {
     cl_int errNum;
     cl_program program;
-
+    char *program_log;
+    size_t log_size;
     std::ifstream kernelFile(fileName, std::ios::in);
     if (!kernelFile.is_open())
     {
@@ -108,8 +109,17 @@ cl_program CreateProgram(cl_context context, cl_device_id device, const char* fi
                                         (const char**)&srcStr,
                                         NULL, NULL);
 
-    errNum = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
+    errNum = clBuildProgram(program, 1, &device, NULL, NULL, NULL);
     LOGD("构建CL内核结果 %d\n" , errNum );
+    if (errNum<0){
+        clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,0,NULL,&log_size);
+        LOGD("日志的大小 %d",log_size);
+        program_log = (char *)malloc(log_size+1);
+        program_log[log_size]='\0';
+        clGetProgramBuildInfo(program,device,CL_PROGRAM_BUILD_LOG,log_size+1,program_log,NULL);
+        LOGD("构建CL内核错误log:%s",program_log);
+        free(program_log);
+    }
     return program;
 }
 
@@ -244,7 +254,7 @@ int test()
 
 
     //const char* filename = "/sdcard/neoscrypt-xaya.cl";
-    const char* filename = "/sdcard/FunTest.cl";
+    const char* filename = "/sdcard/neoscrypt-xaya.cl";
     // 一、选择OpenCL平台并创建一个上下文
     context = CreateContext();
 
@@ -324,7 +334,7 @@ Java_com_example_wangmingyong_opencl_MainActivity_stringFromJNI(
         JNIEnv *env,
         jobject /* this */) {
 
-    readDeviceInfo();
+//    readDeviceInfo();
     test();
 
     std::string hello = "Hello from C++";
