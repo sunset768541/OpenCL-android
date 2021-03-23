@@ -12,6 +12,10 @@
 #include<time.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include "ion.h"
 
 
 #define TAG OpenCL
@@ -63,14 +67,16 @@ cl_command_queue CreateCommandQueue(cl_context context, cl_device_id *device)
 
     if (deviceBufferSize <= 0)
     {
-        std::cerr << "No devices available.";
+        LOGD("No devices available.");
         return NULL;
+    }else{
+          LOGD("deviceBufferSize 为 %d",deviceBufferSize);
     }
 
     // 为设备分配缓存空间
     devices = new cl_device_id[deviceBufferSize / sizeof(cl_device_id)];
     errNum = clGetContextInfo(context, CL_CONTEXT_DEVICES, deviceBufferSize, devices, NULL);
-
+     LOGD("clGetContextInfo 结果 %d",errNum);
     //选取可用设备中的第一个
     commandQueue = clCreateCommandQueue(context, devices[0], 0, NULL);
 
@@ -103,7 +109,7 @@ cl_program CreateProgram(cl_context context, cl_device_id device, const char* fi
                                         NULL, NULL);
 
     errNum = clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
-
+    LOGD("构建CL内核结果 %d\n" , errNum );
     return program;
 }
 
@@ -237,8 +243,8 @@ int test()
     clock_t t1,t2,t3;
 
 
-    const char* filename = "neoscrypt-xaya.cl";
-//    const char* filename = "HelloWorld.cl";
+    //const char* filename = "/sdcard/neoscrypt-xaya.cl";
+    const char* filename = "/sdcard/HelloWorld.cl";
     // 一、选择OpenCL平台并创建一个上下文
     context = CreateContext();
 
@@ -249,7 +255,7 @@ int test()
     program = CreateProgram(context, device, filename);//"HelloWorld.cl");
 
     // 四、 创建OpenCL内核并分配内存空间
-    kernel = clCreateKernel(program, "hello_kernel", NULL);
+    kernel = clCreateKernel(program, "HelloWorld", NULL);
 
     //创建要处理的数据
     float result[ARRAY_SIZE];

@@ -26,7 +26,7 @@
 
 // kernel code from Nanashi Meiyo-Meijin 1.7.6-r10 (July 2016)
 
-#pragma OPENCL EXTENSION cl_amd_media_ops : enable
+
 
 /*
 __device__ uint2x4* W;
@@ -325,6 +325,7 @@ void Blake2S_v2(uint *out, const uint*  inout, const  uint * TheKey)
 
 	((uint8*)out)[0] = V.lo;
 }
+#define amd_bitalign (uint src0, uint src1, uint src2)((uint) (((((long)src0.s0) << 32) | (long)src1.s0) >> (src2.s0 & 31)))
 
 #define SHL32(a,n) (amd_bitalign((a), bitselect(0U,     (a), (amd_bitalign(0U, ~0U, (n)))), (32U - (n))))
 #define SHR32(a,n) (amd_bitalign(0U,  bitselect((a),     0U, (amd_bitalign(0U, ~0U, (32U - (n))))), (n)))
@@ -541,7 +542,7 @@ void fastkdf256_v2(const uint thread, const uint nonce, __local uint* s_data,
 	for (int i = 0; i < 8; i++) {
 		((__global uint8 *)(Input + 8U * thread))[i] = output[i];
 	}
-}
+}//失败
 
 static inline
 uint fastkdf32_v3(uint thread, const uint nonce, uint* const salt, __local uint* const s_data, __global uint *c_data)
@@ -662,7 +663,7 @@ uint fastkdf32_v3(uint thread, const uint nonce, uint* const salt, __local uint*
 	output = SHFRC32S(temp[7], temp[8], bitbuf);
 	output ^= input[7] ^ cdata7;
 	return output;
-}
+}//失败
 
 #define NEO_TID ((get_local_size(0) >> 1) * get_local_id(1) + (get_local_id(0) & 3))
 
@@ -775,7 +776,7 @@ __kernel void neoscrypt_gpu_hash_start(__global uint *c_data, __global uint *inp
 	const uint ZNonce = nonce; //freaking morons !!!
 
 	fastkdf256_v2(thread, ZNonce, s_data, c_data, input_init, Input);
-}
+}//失败
 
 __attribute__((reqd_work_group_size(8, 8, 1)))
 __kernel void neoscrypt_gpu_hash_salsa1(__global uint8 *W, __global uint8 *Tr2, __global uint8 *Input)
@@ -822,7 +823,7 @@ __kernel void neoscrypt_gpu_hash_salsa1(__global uint8 *W, __global uint8 *Tr2, 
 		*((global uint*)&(Tr2 + shiftTr)[i * 2] + ((2 + (get_local_id(0) & 3)) & 3) * 4 + (get_local_id(0) & 3)) = Z[i].z;
 		*((global uint*)&(Tr2 + shiftTr)[i * 2] + ((3 + (get_local_id(0) & 3)) & 3) * 4 + (get_local_id(0) & 3)) = Z[i].w;
 	}
-}
+}//失败
 
 __attribute__((reqd_work_group_size(8, 8, 1)))
 __kernel void neoscrypt_gpu_hash_chacha1(__global uint8 *W, __global uint8 *Tr, __global uint8 *Input)
@@ -870,7 +871,7 @@ __kernel void neoscrypt_gpu_hash_chacha1(__global uint8 *W, __global uint8 *Tr, 
 		*((__global uint*)&(Tr + shiftTr)[i * 2] + 2 * 4 + (get_local_id(0) & 3)) = X[i].z;
 		*((__global uint*)&(Tr + shiftTr)[i * 2] + 3 * 4 + (get_local_id(0) & 3)) = X[i].w;
 	}
-}
+}//失败
 
 __attribute__((reqd_work_group_size(64, 1, 1)))
 __kernel void neoscrypt_gpu_hash_ending(__global uint *c_data, __global uint8 *Tr, __global uint8 *Tr2, __global uint *output, const uint target)
@@ -897,4 +898,4 @@ __kernel void neoscrypt_gpu_hash_ending(__global uint *c_data, __global uint8 *T
 #endif
 
     if(outbuf <= target) SETFOUND(nonce);
-}
+}//失败
