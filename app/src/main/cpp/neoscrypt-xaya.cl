@@ -43,6 +43,7 @@ __constant__ uint input_init[16];
 #define BLOCK_SIZE         64U
 #define BLAKE2S_BLOCK_SIZE 64U
 #define BLAKE2S_OUT_SIZE   32U
+#define MAX_GLOBAL_THREADS   64U
 
 __constant uint8 BLAKE2S_IV_Vec = {
 	0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A,
@@ -325,7 +326,7 @@ void Blake2S_v2(uint *out, const uint*  inout, const  uint * TheKey)
 
 	((uint8*)out)[0] = V.lo;
 }
-#define amd_bitalign (uint src0, uint src1, uint src2)((uint) (((((long)src0.s0) << 32) | (long)src1.s0) >> (src2.s0 & 31)))
+#define amd_bitalign(src0, src1, src2) ((uint) (((((ulong)(src0)) << 32) | (ulong)(src1)) >> ((src2) & 31)))
 
 #define SHL32(a,n) (amd_bitalign((a), bitselect(0U,     (a), (amd_bitalign(0U, ~0U, (n)))), (32U - (n))))
 #define SHR32(a,n) (amd_bitalign(0U,  bitselect((a),     0U, (amd_bitalign(0U, ~0U, (32U - (n))))), (n)))
